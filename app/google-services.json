@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_number": "794212636868",
+    "firebase_url": "https://crypto-project-1.firebaseio.com",
+    "project_id": "crypto-project-1",
+    "storage_bucket": "crypto-project-1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:794212636868:android:3a105e32e00f5b0e",
+        "android_client_info": {
+          "package_name": "com.example.chinmakoto.pay_day_loan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "794212636868-9f18s4ng37isv2gm2iak4cp1qs9e4fmd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chinmakoto.pay_day_loan",
+            "certificate_hash": "902b076edc16dfab9ee0e244ebe67488a2e8224e"
+          }
+        },
+        {
+          "client_id": "794212636868-chl4dv6nhnv6tk6c12fcscrnthhq24i4.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "794212636868-chl4dv6nhnv6tk6c12fcscrnthhq24i4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzRTttD90_ly1iWavfZ5U4a-yj5ffLou8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "794212636868-chl4dv6nhnv6tk6c12fcscrnthhq24i4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
