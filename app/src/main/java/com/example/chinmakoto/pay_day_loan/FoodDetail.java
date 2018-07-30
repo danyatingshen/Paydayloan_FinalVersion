@@ -31,6 +31,7 @@ import com.example.chinmakoto.pay_day_loan.Model.Food;
 import com.example.chinmakoto.pay_day_loan.Model.Lottery;
 import com.example.chinmakoto.pay_day_loan.Model.Order;
 import com.example.chinmakoto.pay_day_loan.Model.Request;
+import com.example.chinmakoto.pay_day_loan.Model.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -53,6 +54,7 @@ public class FoodDetail extends AppCompatActivity {
     FloatingActionButton btnCart;
 
     String foodId = "";
+    String viewed;
     FirebaseDatabase database;
     DatabaseReference foods;
 
@@ -60,7 +62,9 @@ public class FoodDetail extends AppCompatActivity {
 
     //fire base submit after call:
     List<Order> cart = new ArrayList<>();
-    private static List Alreadyview=new ArrayList<>();
+
+    static List Alreadyview=new ArrayList<>();
+
     DatabaseReference requests;
     DatabaseReference lotterys;
     static FoodDetail foodDetail;
@@ -86,6 +90,8 @@ public class FoodDetail extends AppCompatActivity {
         food_time = (TextView) findViewById(R.id.food_time);
         food_image = (ImageView) findViewById(R.id.img_food);
 
+        Alreadyview = Common.currentUser.getViewList();
+
         //food_phone=(String) findViewById(R.id.btnCart);
 
         collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing);
@@ -105,10 +111,15 @@ public class FoodDetail extends AppCompatActivity {
 
         }
 
+        User currents=Common.currentUser;
+        //viewed=currents.getViewList();
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //get phone number
         //call to make record
+        Toast.makeText(FoodDetail.this,"list is"+Alreadyview,Toast.LENGTH_LONG).show();
+
         btnCart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -119,81 +130,74 @@ public class FoodDetail extends AppCompatActivity {
                         ActivityCompat.requestPermissions(FoodDetail.this, new String[]{Manifest.permission.READ_CALL_LOG}, 1);
                     }
                 } else {
-                    //if the person has never called
-                    if (!Alreadyview.contains(foodId)){
-                        //////////Make the call:did not call beofre
+                    //////////Make the call:
+                    if (!Alreadyview.contains(foodId)|Alreadyview==null) {
                         String phoneNumber = food_phone.getText().toString();
                         Intent call = new Intent(Intent.ACTION_CALL);
-                        call.setData(Uri.parse("tel:" +phoneNumber ));
+                        call.setData(Uri.parse("tel:" + phoneNumber));
                         Toast.makeText(FoodDetail.this, "Make the call", Toast.LENGTH_SHORT).show();
-                        startActivity(call);}
-                        else//the person has already called
+                        startActivity(call);
+                    }else
                     {
-                        Toast.makeText(FoodDetail.this,"You already called this Store, Please try another one!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(FoodDetail.this,"You already make the call, Please try another one",Toast.LENGTH_LONG).show();
                     }
-                   //////////////check the duration:
-                        if (ActivityCompat.checkSelfPermission(foodDetail, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-                            if (ActivityCompat.shouldShowRequestPermissionRationale(foodDetail, Manifest.permission.READ_CALL_LOG)) {
-                                ActivityCompat.requestPermissions(foodDetail, new String[]{Manifest.permission.READ_CALL_LOG}, 1);
-                            } else {
-                                ActivityCompat.requestPermissions(foodDetail, new String[]{Manifest.permission.READ_CALL_LOG}, 1);
-                            }
-                        } else {
-                            //////////get the duration:
-                            Cursor cur = getContentResolver().query(CallLog.Calls.CONTENT_URI,
-                                    null, null, null, android.provider.CallLog.Calls.DATE + " DESC limit 1;");
-
-                            int duration = cur.getColumnIndex(CallLog.Calls.DURATION);
-                            String callDuration = null;
-                            while (cur.moveToNext()) {
-                                callDuration = cur.getString(duration);
-                                Toast.makeText(foodDetail, "Duration is " + callDuration, Toast.LENGTH_SHORT).show();
-
-                            }
-                            int callDurationInt = Integer.parseInt(callDuration);
-                            int foodTimeInt = Integer.parseInt(food_time.getText().toString());
+                }
+            }
+        });
+    }
+    //////////checking permission:
+             /*  if (ActivityCompat.checkSelfPermission(FoodDetail.this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(FoodDetail.this, Manifest.permission.READ_CALL_LOG)) {
+                        ActivityCompat.requestPermissions(FoodDetail.this, new String[]{Manifest.permission.READ_CALL_LOG}, 1);
+                    } else {
+                        ActivityCompat.requestPermissions(FoodDetail.this, new String[]{Manifest.permission.READ_CALL_LOG}, 1);
+                    }
+                } else {
 
 
-                            ///check the duration:
-                            if (callDurationInt==foodTimeInt|callDurationInt>foodTimeInt)
-                            {
-                                new Database(getBaseContext()).addToCart(new Order(
-                                        foodId,
-                                        currentFood.getName(),
-                                        currentFood.getPrice()
-                                ));
+                    //////////get the duration:
+                    Cursor cur = getContentResolver().query(CallLog.Calls.CONTENT_URI,
+                            null, null, null, android.provider.CallLog.Calls.DATE + " DESC limit 1;");
 
-                                ///////////to firebase:
-                                Request request = new Request(
-                                        Common.currentUser.getPhone(),
-                                        Common.currentUser.getName(),
-                                        Common.currentUser.getPhone(),
-                                        food_price.getText().toString(),
-                                        cart
-                                );
+                    int duration = cur.getColumnIndex(CallLog.Calls.DURATION);
+                    while (cur.moveToNext()) {
+                        String callDuration = cur.getString(duration);
+                        String require_time = food_time.getText().toString();
 
-                                Lottery lottery=new Lottery(Common.currentUser.getPhone());
+                        int result = require_time.compareTo(callDuration);
 
+                        if (result == 0 | result > 0) {
+                            ///////create order: add to cart
+                            new Database(getBaseContext()).addToCart(new Order(
+                                    foodId,
+                                    currentFood.getName(),
+                                    currentFood.getPrice()
+                            ));
 
-                                lotterys.child(String.valueOf(System.currentTimeMillis())).setValue(lottery);
-                                requests.child(String.valueOf(System.currentTimeMillis())).setValue(request);
+                            ///////////to firebase:
+                            Request request = new Request(
+                                    Common.currentUser.getPhone(),
+                                    Common.currentUser.getName(),
+                                    Common.currentUser.getPhone(),
+                                    food_price.getText().toString(),
+                                    cart
+                            );
 
-                                Alreadyview.add(foodId);
-                            }else
-                            {
-                                Toast.makeText(FoodDetail.this,"You Didn't pass the minimum duration!", Toast.LENGTH_SHORT).show();
-                            }
+                            //firebase submit:
+
+                            requests.child(String.valueOf(System.currentTimeMillis())).setValue(request);
+
 
                         }
 
-
                     }
 
+/////////////////////////////
                 }
-
+            }
         });
-    }
 
+    } */
 
     public static String getLastCallDetails(Context context) {
 
@@ -334,6 +338,7 @@ public class FoodDetail extends AppCompatActivity {
             }
             int callDurationInt = Integer.parseInt(callDuration);
             int foodTimeInt = Integer.parseInt(food_time.getText().toString());
+
             if (callDurationInt==foodTimeInt|callDurationInt>foodTimeInt)
             {
                 new Database(getBaseContext()).addToCart(new Order(
@@ -357,6 +362,8 @@ public class FoodDetail extends AppCompatActivity {
                 lotterys.child(String.valueOf(System.currentTimeMillis())).setValue(lottery);
                 requests.child(String.valueOf(System.currentTimeMillis())).setValue(request);
                 Alreadyview.add(foodId);
+                viewed=viewed+foodId;
+
             }
 
         }
